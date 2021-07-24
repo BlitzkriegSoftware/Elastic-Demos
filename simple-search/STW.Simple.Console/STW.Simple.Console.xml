@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>STW.Simple.Console</name>
+    </assembly>
+    <members>
+        <member name="T:STW.Simple.Console.Libs.AssembyInfoHelper">
+            <summary>
+            Helper: Assembly Info
+            <para>Translates the <c>CustomAttributeData</c> to a usable string value</para>
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.AssembyInfoHelper.TryParse(System.Reflection.CustomAttributeData,System.String@)">
+            <summary>
+            Try Parse a <c>System.Reflection.CustomAttributeData</c> into a string
+            </summary>
+            <param name="attribute">(this)</param>
+            <param name="s">Strng to parse into</param>
+            <returns>True if success</returns>
+        </member>
+        <member name="T:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata">
+            <summary>
+            Custom Metadata For All Blitzkireg Software Micro-Service
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.Copyright">
+            <summary>
+            Copyright
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.Company">
+            <summary>
+            Company
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.Description">
+            <summary>
+            Description
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.SemanticVersion">
+            <summary>
+            Semantic Version <para>See: semver.org</para>
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.FileVersion">
+            <summary>
+            File Version
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.Product">
+            <summary>
+            Product
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.PropertySet(System.String,System.String)">
+            <summary>
+            Property Set
+            </summary>
+            <param name="name">(sic)</param>
+            <param name="value">(sic)</param>
+        </member>
+        <member name="M:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata.ToString">
+            <summary>
+            Version String
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:STW.Simple.Console.Models.CommandOptions">
+            <summary>
+            Command Line Options
+            </summary>
+        </member>
+        <member name="F:STW.Simple.Console.Models.CommandOptions.RecordsDefault">
+            <summary>
+            Default: Records
+            </summary>
+        </member>
+        <member name="F:STW.Simple.Console.Models.CommandOptions.QueryResultsDefault">
+            <summary>
+            Default: Query Results to Return
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.CommandOptions.Verbose">
+            <summary>
+            Verbose Output
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.CommandOptions.Records">
+            <summary>
+            Number of Records to Generate
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.CommandOptions.SearchText">
+            <summary>
+            Search Text
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.CommandOptions.QueryResults">
+            <summary>
+            Query Results to Return
+            </summary>
+        </member>
+        <member name="T:STW.Simple.Console.Models.Person">
+            <summary>
+            Models: Person
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.Person.Id">
+            <summary>
+            PK
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.Person.FirstName">
+            <summary>
+            First Name
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.Person.LastName">
+            <summary>
+            Last Name
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.Person.EMail">
+            <summary>
+            E-Mail
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Models.Person.Phone">
+            <summary>
+            Phone
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Models.Person.ToString">
+            <summary>
+            To String (debug)
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:STW.Simple.Console.Models.Person.MakeRandom(System.Int32)">
+            <summary>
+            Make Random Person
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:STW.Simple.Console.Program.ProgramMetadata">
+            <summary>
+            Semantic Version, etc from Assembly Metadata
+            </summary>
+        </member>
+        <member name="T:STW.Simple.Console.Workers.ISearchWorker">
+            <summary>
+            Interface: Search Worker
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Workers.ISearchWorker.Run(STW.Simple.Console.Models.CommandOptions)">
+            <summary>
+            Main Entry Point
+            </summary>
+            <param name="o">CommandOptions</param>
+        </member>
+        <member name="T:STW.Simple.Console.Workers.SearchWorker">
+            <summary>
+            Search Worker
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Workers.SearchWorker.#ctor(Microsoft.Extensions.Logging.ILogger{STW.Simple.Console.Workers.SearchWorker},Microsoft.Extensions.Configuration.IConfigurationRoot)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="logger">ILogger</param>
+            <param name="config">IConfigurationRoot</param>
+        </member>
+        <member name="M:STW.Simple.Console.Workers.SearchWorker.Run(STW.Simple.Console.Models.CommandOptions)">
+            <summary>
+            Run (main logic)
+            </summary>
+            <param name="o">CommandOptions</param>
+        </member>
+    </members>
+</doc>

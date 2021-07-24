@@ -1,0 +1,4 @@
+{
+  "ConnectionString": "http://localhost:9200",
+  "DefaultIndex":  "People"
+}

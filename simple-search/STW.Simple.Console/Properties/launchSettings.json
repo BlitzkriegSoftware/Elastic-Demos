@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "STW.Simple.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "-s \"st\""
+    }
+  }
+}
