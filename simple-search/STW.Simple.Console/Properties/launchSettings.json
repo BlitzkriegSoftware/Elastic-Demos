@@ -2,7 +2,7 @@
   "profiles": {
     "STW.Simple.Console": {
       "commandName": "Project",
-      "commandLineArgs": "-s \"st\""
+      "commandLineArgs": "-s \"st\" -r 200"
     }
   }
 }

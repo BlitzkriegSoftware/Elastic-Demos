@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Faker;
-
-namespace STW.Simple.Console.Models
+﻿namespace STW.Simple.Console.Models
 {
     /// <summary>
     /// Models: Person
