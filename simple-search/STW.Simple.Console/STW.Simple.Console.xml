@@ -129,6 +129,11 @@
             Models: Person
             </summary>
         </member>
+        <member name="F:STW.Simple.Console.Models.Person.EmailSuffix">
+            <summary>
+            E-Mail Suffix
+            </summary>
+        </member>
         <member name="P:STW.Simple.Console.Models.Person.Id">
             <summary>
             PK

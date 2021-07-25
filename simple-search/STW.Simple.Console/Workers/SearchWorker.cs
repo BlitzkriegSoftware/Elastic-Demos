@@ -57,7 +57,11 @@ namespace STW.Simple.Console.Workers
             _client = new ElasticClient(settings);
 
             // Create Index
-            bool created = _client.IndexCreateIfMissing<Models.Person>(indexName: ref indexName, response: out CreateIndexResponse indexResponse, dropExisting: false);
+            bool created = _client.IndexCreateIfMissing<Models.Person>(
+                indexName: ref indexName, 
+                response: out CreateIndexResponse indexResponse, 
+                dropExisting: true);
+           
             if (!created)
             {
                 System.Console.WriteLine($"{indexName}, Exists: true\n");
@@ -86,9 +90,49 @@ namespace STW.Simple.Console.Workers
                 )
             );
             DumpRecords(results, size, searchTerm);
-            
+
             #endregion
 
+            #region "Range Search"
+
+            searchTerm = "Id: 1 to 9";
+            results = _client.Search<Models.Person>(s => s
+                .From(0)
+                .Size(size)
+                .Index(indexName)
+                .Query(q => q.Range(r => r.Boost(1.0).Field(f => f.Id).GreaterThanOrEquals(1).LessThanOrEquals(9))
+                )
+            );
+            DumpRecords(results, size, searchTerm);
+
+            #endregion
+
+            #region "Value Search"
+
+            searchTerm = "Id: 9";
+            results = _client.Search<Models.Person>(s => s
+                .From(0)
+                .Size(size)
+                .Index(indexName)
+                .Query(q => q.Term(m => m.Id, 9))
+            );
+            DumpRecords(results, size, searchTerm);
+
+            #endregion
+
+            #region "Phrase Search"
+
+            searchTerm = Person.EmailSuffix;
+            results = _client.Search<Models.Person>(s => s
+                .From(0)
+                .Size(size)
+                .Index(indexName)
+                .Query(q => q.MatchPhrase(p => p.Field(f => f.EMail).Boost(1.0).Query(searchTerm))
+                )
+            );
+            DumpRecords(results, size, searchTerm);
+
+            #endregion
         }
 
         #region "Dump Results"

@@ -7,6 +7,11 @@
     {
 
         /// <summary>
+        /// E-Mail Suffix
+        /// </summary>
+        public const string EmailSuffix = "nomail.org";
+
+        /// <summary>
         /// PK
         /// </summary>
         public int Id { get; set; }
@@ -54,7 +59,7 @@
                 Phone = Faker.Phone.GetPhoneNumber()
             };
 
-            p.EMail = $"{p.FirstName}.{p.LastName}@nomail.org";
+            p.EMail = $"{p.FirstName}.{p.LastName}@{EmailSuffix}";
 
             return p;
         }
