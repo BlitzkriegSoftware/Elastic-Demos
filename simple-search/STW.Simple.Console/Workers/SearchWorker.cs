@@ -39,6 +39,8 @@ namespace STW.Simple.Console.Workers
             #region "Parameters and Configuration"
             if (o == null) throw new ArgumentNullException(nameof(o));
 
+            long ms;
+
             int size = (o.QueryResults > 0) ? o.QueryResults : CommandOptions.QueryResultsDefault;
 
             // Index names must be all lower case and trimmed
@@ -46,8 +48,8 @@ namespace STW.Simple.Console.Workers
 
             // Connection String
             string elasticConnectionString = this._config["ConnectionString"];
-            if (string.IsNullOrWhiteSpace(elasticConnectionString)) 
-                    throw new InvalidOperationException("ConnectionString: Not configured in config.json");
+            if (string.IsNullOrWhiteSpace(elasticConnectionString))
+                throw new InvalidOperationException("ConnectionString: Not configured in config.json");
             #endregion
 
             #region "Make Client and Index"
@@ -56,81 +58,113 @@ namespace STW.Simple.Console.Workers
             var settings = new ConnectionSettings(new Uri(elasticConnectionString)).DefaultIndex(indexName);
             _client = new ElasticClient(settings);
 
-            // Create Index
-            bool created = _client.IndexCreateIfMissing<Models.Person>(
-                indexName: ref indexName, 
-                response: out CreateIndexResponse indexResponse, 
-                dropExisting: true);
-           
-            if (!created)
+            using (var t1 = new Libs.ConsoleTimer("Index"))
             {
-                System.Console.WriteLine($"{indexName}, Exists: true\n");
-            }
-            else
-            {
-                System.Console.WriteLine($"{indexName}, Created: {indexResponse.IsValid}, Error: {indexResponse.ServerError}\n");
-            }
+                // Create Index
+                bool created = _client.IndexCreateIfMissing<Models.Person>(
+                    indexName: ref indexName,
+                    response: out CreateIndexResponse indexResponse,
+                    dropExisting: true);
 
+                ms = t1.ElapsedMilliseconds;
+                if (!created)
+                {
+                    System.Console.WriteLine($"{indexName}, Exists: true, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+                }
+                else
+                {
+                    System.Console.WriteLine($"{indexName}, Created: {indexResponse.IsValid}, Error: {indexResponse.ServerError}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+                }
+            }
             #endregion
 
             #region "Create Records to Search"
-            bool isLikely = CreateData(_client, o.Records, o.SearchText);
-            System.Console.WriteLine($"Created {o.Records}, Likely: {isLikely}");
+            using (var t1 = new ConsoleTimer($"Create data: {o.Records} records"))
+            {
+                bool isLikely = CreateData(_client, o.Records, o.SearchText);
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"Created {o.Records}, Likely: {isLikely}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
             #endregion
 
             #region "Wildcard Search"
-            
-            var searchTerm = "*" + o.SearchText + "*";
-            ISearchResponse<Person> results = _client.Search<Models.Person>(s => s
-                .From(0)
-                .Size(size)
-                .Index(indexName)
-                .Query(q => q.Wildcard(w => w.Boost(1.0).Field(f => f.FirstName).Value(searchTerm)) ||
-                            q.Wildcard(w => w.Boost(1.0).Field(f => f.LastName).Value(searchTerm))
-                )
-            );
-            DumpRecords(results, size, searchTerm);
+
+            string searchTerm = string.Empty;
+            ISearchResponse<Person> results;
+
+            searchTerm = "*" + o.SearchText + "*";
+            using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
+            {
+                results = _client.Search<Models.Person>(s => s
+                    .From(0)
+                    .Size(size)
+                    .Index(indexName)
+                    .Query(q => q.Wildcard(w => w.Boost(1.0).Field(f => f.FirstName).Value(searchTerm)) ||
+                                q.Wildcard(w => w.Boost(1.0).Field(f => f.LastName).Value(searchTerm))
+                    )
+                );
+                ms = t1.ElapsedMilliseconds;
+            }
+
+            DumpRecords(results, size, searchTerm, ms);
 
             #endregion
 
             #region "Range Search"
 
             searchTerm = "Id: 1 to 9";
-            results = _client.Search<Models.Person>(s => s
-                .From(0)
-                .Size(size)
-                .Index(indexName)
-                .Query(q => q.Range(r => r.Boost(1.0).Field(f => f.Id).GreaterThanOrEquals(1).LessThanOrEquals(9))
-                )
-            );
-            DumpRecords(results, size, searchTerm);
+            using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
+            {
+
+                results = _client.Search<Models.Person>(s => s
+                            .From(0)
+                            .Size(size)
+                            .Index(indexName)
+                            .Query(q => q.Range(r => r.Boost(1.0).Field(f => f.Id).GreaterThanOrEquals(1).LessThanOrEquals(9))
+                            )
+                        );
+                ms = t1.ElapsedMilliseconds;
+            }
+
+            DumpRecords(results, size, searchTerm, ms);
 
             #endregion
 
             #region "Value Search"
 
             searchTerm = "Id: 9";
-            results = _client.Search<Models.Person>(s => s
-                .From(0)
-                .Size(size)
-                .Index(indexName)
-                .Query(q => q.Term(m => m.Id, 9))
-            );
-            DumpRecords(results, size, searchTerm);
+            using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
+            {
+                results = _client.Search<Models.Person>(s => s
+                    .From(0)
+                    .Size(size)
+                    .Index(indexName)
+                    .Query(q => q.Term(m => m.Id, 9))
+                );
+
+                ms = t1.ElapsedMilliseconds;
+            }
+
+            DumpRecords(results, size, searchTerm, ms);
 
             #endregion
 
             #region "Phrase Search"
 
             searchTerm = Person.EmailSuffix;
-            results = _client.Search<Models.Person>(s => s
-                .From(0)
-                .Size(size)
-                .Index(indexName)
-                .Query(q => q.MatchPhrase(p => p.Field(f => f.EMail).Boost(1.0).Query(searchTerm))
-                )
-            );
-            DumpRecords(results, size, searchTerm);
+            using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
+            {
+                results = _client.Search<Models.Person>(s => s
+                        .From(0)
+                        .Size(size)
+                        .Index(indexName)
+                        .Query(q => q.MatchPhrase(p => p.Field(f => f.EMail).Boost(1.0).Query(searchTerm))
+                        )
+                    );
+                ms = t1.ElapsedMilliseconds;
+            }
+
+            DumpRecords(results, size, searchTerm, ms);
 
             #endregion
         }
@@ -143,11 +177,12 @@ namespace STW.Simple.Console.Workers
         /// <param name="results">ISearchResponse</param>
         /// <param name="size">Max requested</param>
         /// <param name="searchTerm">Search Term</param>
-        public static void DumpRecords(ISearchResponse<Person> results, int size, string searchTerm)
+        /// <param name="ms">Milliseconds</param>
+        public static void DumpRecords(ISearchResponse<Person> results, int size, string searchTerm, long ms = 0)
         {
             if (results is null) throw new ArgumentNullException(nameof(results));
 
-            System.Console.WriteLine($"\nValid: {results.IsValid}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}");
+            System.Console.WriteLine($"\nValid: {results.IsValid}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}, Elaspeds: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             foreach (var p in results.Documents)
             {
                 System.Console.WriteLine($"\t{p}");

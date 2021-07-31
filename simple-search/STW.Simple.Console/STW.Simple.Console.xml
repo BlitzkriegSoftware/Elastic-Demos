@@ -18,6 +18,113 @@
             <param name="s">Strng to parse into</param>
             <returns>True if success</returns>
         </member>
+        <member name="T:STW.Simple.Console.Libs.ConsoleTimer">
+            <summary>
+            Handy Helper to Time Executions of Tests
+            <example>
+            Here is a typical snippet, because the class supports <see cref="T:System.IDisposable"/> the time can be started at the top 
+            of the using statement and automatically stopped in the dispose
+            <code>
+            // Stop Watch Created and Started
+            using (ConsoleTimer myTimer = new ConsoleTimer( ... )) {
+                // Do something you want timed
+                var elapsed = myTimer.ElapsedMilliseconds;
+                // Stop Watch stopped in DTOR
+            }
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.#ctor">
+            <summary>
+            CTOR
+            <para>Also starts timer</para>
+            </summary>
+        </member>
+        <member name="F:STW.Simple.Console.Libs.ConsoleTimer.DefaultTitle">
+            <summary>
+            Default: Title
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.ConsoleTimer.Title">
+            <summary>
+            Title
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.#ctor(System.String)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="title">Title</param>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.ConsoleTimer.StopWatch">
+            <summary>
+            Stop watch instance
+            <para>Do not access directly if possible</para>
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.ConsoleTimer.IsRunning">
+            <summary>
+            Determine if the stop watch is running
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.ConsoleTimer.ElapsedMilliseconds">
+            <summary>
+            Returns milliseconds from a running timer
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.ConsoleTimer.ElaspsedTicks">
+            <summary>
+            Returns the elapsed ticks from a running timer
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.DisplayElaspsedTime(System.Int64)">
+            <summary>
+            Display milliseconds in a nice string
+            </summary>
+            <param name="milliseconds">milliseconds</param>
+            <returns>nice string</returns>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.DisplayElaspsedTime(System.TimeSpan)">
+            <summary>
+            Display TimeSpan in a nice string
+            </summary>
+            <param name="ts">TimeSpan</param>
+            <returns>nice string</returns>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Start">
+            <summary>
+            Called by constructor, creates a new stop watch and starts it
+            Try not to call explictly
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Stop">
+            <summary>
+            Called by destructor, stops stopwatch writes log (optionally)
+            </summary>
+            <returns>Milliseconds Elapsed</returns>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Reset">
+            <summary>
+            Reset but do not destroy the timer
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Cancel">
+            <summary>
+            Stop and destroy the timer
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Dispose">
+            <summary>
+            Generic destructor
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.ConsoleTimer.Dispose(System.Boolean)">
+            <summary>
+            Dispose
+            </summary>
+            <param name="disposing">True if so</param>
+        </member>
         <member name="T:STW.Simple.Console.Libs.ElasticHelper">
             <summary>
             Elastic Helper
@@ -205,13 +312,14 @@
             </summary>
             <param name="o">CommandOptions</param>
         </member>
-        <member name="M:STW.Simple.Console.Workers.SearchWorker.DumpRecords(Nest.ISearchResponse{STW.Simple.Console.Models.Person},System.Int32,System.String)">
+        <member name="M:STW.Simple.Console.Workers.SearchWorker.DumpRecords(Nest.ISearchResponse{STW.Simple.Console.Models.Person},System.Int32,System.String,System.Int64)">
             <summary>
             Dump Search Results
             </summary>
             <param name="results">ISearchResponse</param>
             <param name="size">Max requested</param>
             <param name="searchTerm">Search Term</param>
+            <param name="ms">Milliseconds</param>
         </member>
         <member name="M:STW.Simple.Console.Workers.SearchWorker.CreateData(Nest.ElasticClient,System.Int32,System.String)">
             <summary>
