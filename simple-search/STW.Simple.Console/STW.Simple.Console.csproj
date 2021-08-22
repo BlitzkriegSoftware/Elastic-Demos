@@ -6,14 +6,17 @@
 		<Copyright>Copyright © 2021 Stuart Williams</Copyright>
 		<Company>Stuart Williams</Company>
 		<Description>Demo using Elastic Search in DotNet Core</Description>
-		<InformationalVersion>1.1.0</InformationalVersion>
+		<InformationalVersion>1.2.0</InformationalVersion>
 		<PackageLicenseFile>..\LICENSE</PackageLicenseFile>
 		<PackageIcon>..\favicon_32x32_o7Z_icon.ico</PackageIcon>
 		<PackageIconUrl />
 		<RepositoryType>Git</RepositoryType>
 		<RepositoryUrl>https://github.com/BlitzkriegSoftware/Elastic-Demos</RepositoryUrl>
 		<PackageTags>ElasticSeach</PackageTags>
-		<PackageReleaseNotes>1.0.0 Simple Demo</PackageReleaseNotes>
+		<PackageReleaseNotes>
+			1.2.0 Delete and other useful extensions
+			1.0.0 Simple Demo
+		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

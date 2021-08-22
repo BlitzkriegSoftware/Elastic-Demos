@@ -15,6 +15,8 @@ namespace STW.Simple.Console.Workers
     /// </summary>
     public class SearchWorker : ISearchWorker
     {
+        #region "Fields and CTOR"
+
         private readonly ILogger _logger;
         private readonly IConfigurationRoot _config;
         private ElasticClient _client;
@@ -30,16 +32,22 @@ namespace STW.Simple.Console.Workers
             this._config = config;
         }
 
+        #endregion
+
         /// <summary>
         /// Run (main logic)
         /// </summary>
         /// <param name="o">CommandOptions</param>
         public void Run(CommandOptions o)
         {
+
             #region "Parameters and Configuration"
+
             if (o == null) throw new ArgumentNullException(nameof(o));
 
             long ms;
+            long id;
+            string searchTerm = string.Empty;
 
             int size = (o.QueryResults > 0) ? o.QueryResults : CommandOptions.QueryResultsDefault;
 
@@ -50,6 +58,7 @@ namespace STW.Simple.Console.Workers
             string elasticConnectionString = this._config["ConnectionString"];
             if (string.IsNullOrWhiteSpace(elasticConnectionString))
                 throw new InvalidOperationException("ConnectionString: Not configured in config.json");
+
             #endregion
 
             #region "Make Client and Index"
@@ -76,20 +85,99 @@ namespace STW.Simple.Console.Workers
                     System.Console.WriteLine($"{indexName}, Created: {indexResponse.IsValid}, Error: {indexResponse.ServerError}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
                 }
             }
+
             #endregion
 
             #region "Create Records to Search"
+
             using (var t1 = new ConsoleTimer($"Create data: {o.Records} records"))
             {
                 bool isLikely = CreateData(_client, o.Records, o.SearchText);
                 ms = t1.ElapsedMilliseconds;
-                System.Console.WriteLine($"Created {o.Records}, Likely: {isLikely}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                System.Console.WriteLine($"Created: {o.Records}, Likely: {isLikely}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
+
+            #endregion
+
+            #region "Count Records"
+
+            using (var t1 = new ConsoleTimer($"Count records"))
+            {
+                var countResponse = _client.Count<Models.Person>();
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nCount: {countResponse.Count}, IsValid: {countResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            #endregion
+
+            #region "Delete by ID"
+
+            id = 1;
+            using (var t1 = new ConsoleTimer($"Delete Record"))
+            {
+                var deleteResponse = _client.Delete<Models.Person>(id);
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nDelete: {id}, {deleteResponse.Result}, IsValid: {deleteResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            #endregion
+
+            #region "Delete by Query"
+
+            id = 5;
+            using (var t1 = new ConsoleTimer($"Delete Record"))
+            {
+                var qbqResult = _client.DeleteByQuery<Models.Person>(p => p.Index(indexName).Query(q => q.Term(m => m.Id, id)));
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nDeleteByQuery: {qbqResult.Total}, IsValid: {qbqResult.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            #endregion
+
+            #region "Exists"
+
+            id = 11;
+            using (var t1 = new ConsoleTimer($"Exists Record"))
+            {
+                var existsResponse = _client.DocumentExists<Models.Person>(id);
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nExists: {existsResponse.Exists}, IsValid: {existsResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            #endregion
+
+            #region "Get By Id"
+
+            using (var t1 = new ConsoleTimer($"Get Record"))
+            {
+                var getResponse = _client.Get<Models.Person>(id);
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nGet: {getResponse.Source}, IsValid: {getResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            #endregion
+
+            #region "Update Record and Get it Back"
+
+            using (var t1 = new ConsoleTimer($"Update Record"))
+            {
+                var model = Models.Person.MakeRandom(id);
+                var updateResponse = _client.Update<Models.Person>(new DocumentPath<Models.Person>(model), u =>  u.Doc(model).Refresh(Elasticsearch.Net.Refresh.WaitFor));
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nUpdate: {updateResponse.Result}, IsValid: {updateResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
+            using (var t1 = new ConsoleTimer($"Get Record"))
+            {
+                var getResponse = _client.Get<Models.Person>(id);
+                ms = t1.ElapsedMilliseconds;
+                System.Console.WriteLine($"\nGet: {getResponse.Source}, IsValid: {getResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+            }
+
             #endregion
 
             #region "Wildcard Search"
 
-            string searchTerm = string.Empty;
             ISearchResponse<Person> results;
 
             searchTerm = "*" + o.SearchText + "*";
@@ -132,14 +220,14 @@ namespace STW.Simple.Console.Workers
 
             #region "Value Search"
 
-            searchTerm = "Id: 9";
+            searchTerm = "Id: {id}";
             using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
             {
                 results = _client.Search<Models.Person>(s => s
                     .From(0)
                     .Size(size)
                     .Index(indexName)
-                    .Query(q => q.Term(m => m.Id, 9))
+                    .Query(q => q.Term(m => m.Id, id))
                 );
 
                 ms = t1.ElapsedMilliseconds;

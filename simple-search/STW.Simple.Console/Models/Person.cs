@@ -14,7 +14,7 @@
         /// <summary>
         /// PK
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// First Name
@@ -49,7 +49,7 @@
         /// Make Random Person
         /// </summary>
         /// <returns></returns>
-        public static Person MakeRandom(int index)
+        public static Person MakeRandom(long index)
         {
             var p = new Person
             {

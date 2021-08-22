@@ -272,7 +272,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:STW.Simple.Console.Models.Person.MakeRandom(System.Int32)">
+        <member name="M:STW.Simple.Console.Models.Person.MakeRandom(System.Int64)">
             <summary>
             Make Random Person
             </summary>
