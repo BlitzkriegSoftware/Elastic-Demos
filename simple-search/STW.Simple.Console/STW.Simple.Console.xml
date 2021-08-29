@@ -148,6 +148,63 @@
             <param name="response">CreateIndexResponse</param>
             <returns>True if created</returns>
         </member>
+        <member name="T:STW.Simple.Console.Libs.MissingConfigurationException">
+            <summary>
+            Missing Configuration Exception
+            </summary>
+        </member>
+        <member name="P:STW.Simple.Console.Libs.MissingConfigurationException.ConfigurationItem">
+            <summary>
+            Configuration Item that is missing
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor">
+            <summary>
+            CTOR
+            </summary>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor(System.String)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="message">(sic)</param>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor(System.String,System.Exception)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="message">(sic)</param>
+            <param name="innerException">(sic)</param>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor(System.String,System.String)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="configurationItem">Configuration Item that is missing</param>
+            <param name="message">(sic)</param>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor(System.String,System.String,System.Exception)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="configurationItem">Configuration Item that is missing</param>
+            <param name="message">(sic)</param>
+            <param name="innerException">(sic)</param>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            CTOR
+            </summary>
+            <param name="info">SerializationInfo</param>
+            <param name="context">StreamingContext</param>
+        </member>
+        <member name="M:STW.Simple.Console.Libs.MissingConfigurationException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Get Object Data
+            </summary>
+            <param name="info">SerializationInfo</param>
+            <param name="context">StreamingContext</param>
+        </member>
         <member name="T:STW.Simple.Console.Models.BlitzAssemblyVersionMetadata">
             <summary>
             Custom Metadata For All Blitzkireg Software Micro-Service

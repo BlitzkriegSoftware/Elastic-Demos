@@ -48,28 +48,35 @@ namespace STW.Simple.Console.Workers
             long ms;
             long id;
             string searchTerm = string.Empty;
-
             int size = (o.QueryResults > 0) ? o.QueryResults : CommandOptions.QueryResultsDefault;
 
             // Index names must be all lower case and trimmed
-            string indexName = ElasticHelper.IndexNameFix(this._config["DefaultIndex"]);
+            string indexName = this._config["DefaultIndex"];
+            if (string.IsNullOrWhiteSpace(indexName)) throw new MissingConfigurationException("DefaultIndex", "Not configured in config.json");
+            indexName = ElasticHelper.IndexNameFix(indexName);
 
             // Connection String
             string elasticConnectionString = this._config["ConnectionString"];
             if (string.IsNullOrWhiteSpace(elasticConnectionString))
-                throw new InvalidOperationException("ConnectionString: Not configured in config.json");
+                throw new MissingConfigurationException("ConnectionString", "Not configured in config.json");
 
             #endregion
 
             #region "Make Client and Index"
 
             // Make Client
-            var settings = new ConnectionSettings(new Uri(elasticConnectionString)).DefaultIndex(indexName);
-            _client = new ElasticClient(settings);
+            using (var t1 = new Libs.ConsoleTimer())
+            {
+                var settings = new ConnectionSettings(new Uri(elasticConnectionString)).DefaultIndex(indexName);
+                _client = new ElasticClient(settings);
+                ms = t1.ElapsedMilliseconds;
+                var pingResults = _client.Ping();
+                System.Console.WriteLine($"Create Client, Is Valid: {pingResults.IsValid}, Error: {pingResults?.ServerError?.Status} , Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+            }
 
+            // Create Index
             using (var t1 = new Libs.ConsoleTimer("Index"))
             {
-                // Create Index
                 bool created = _client.IndexCreateIfMissing<Models.Person>(
                     indexName: ref indexName,
                     response: out CreateIndexResponse indexResponse,
@@ -183,6 +190,8 @@ namespace STW.Simple.Console.Workers
             searchTerm = "*" + o.SearchText + "*";
             using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
             {
+                var request = new SearchRequest<Models.Person>();
+
                 results = _client.Search<Models.Person>(s => s
                     .From(0)
                     .Size(size)
@@ -193,6 +202,8 @@ namespace STW.Simple.Console.Workers
                 );
                 ms = t1.ElapsedMilliseconds;
             }
+
+            // _client.Explain<Models.Person>()
 
             DumpRecords(results, size, searchTerm, ms);
 
@@ -298,6 +309,7 @@ namespace STW.Simple.Console.Workers
                 var p = Models.Person.MakeRandom((i + 1));
                 if (p.FirstName.Contains(searchText) || p.LastName.Contains(searchText)) isLikely = true;
                 System.Console.WriteLine($"\t{p}");
+                // This is what adds the record to the search index
                 client.IndexDocument<Models.Person>(p);
             }
             return isLikely;
