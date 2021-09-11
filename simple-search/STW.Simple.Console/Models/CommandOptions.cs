@@ -20,7 +20,7 @@ namespace STW.Simple.Console.Models
         /// <summary>
         /// Verbose Output
         /// </summary>
-        [Option('v',"Verbose", Default = true, HelpText = "Verbose Output")]
+        [Option('v',"Verbose", Default = false, HelpText = "Verbose Output")]
         public bool Verbose { get; set; }
 
         /// <summary>

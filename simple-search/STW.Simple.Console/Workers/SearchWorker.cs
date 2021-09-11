@@ -212,7 +212,7 @@ namespace STW.Simple.Console.Workers
 
             // _client.Explain<Models.Person>()
 
-            DumpRecords(results, size, searchTerm, ms);
+            DumpRecords(results, size, searchTerm, ms, o.Verbose);
 
             #endregion
 
@@ -232,7 +232,7 @@ namespace STW.Simple.Console.Workers
                 ms = t1.ElapsedMilliseconds;
             }
 
-            DumpRecords(results, size, searchTerm, ms);
+            DumpRecords(results, size, searchTerm, ms, o.Verbose);
 
             #endregion
 
@@ -251,7 +251,7 @@ namespace STW.Simple.Console.Workers
                 ms = t1.ElapsedMilliseconds;
             }
 
-            DumpRecords(results, size, searchTerm, ms);
+            DumpRecords(results, size, searchTerm, ms, o.Verbose);
 
             #endregion
 
@@ -270,7 +270,7 @@ namespace STW.Simple.Console.Workers
                 ms = t1.ElapsedMilliseconds;
             }
 
-            DumpRecords(results, size, searchTerm, ms);
+            DumpRecords(results, size, searchTerm, ms, o.Verbose);
 
             #endregion
         }
@@ -289,7 +289,7 @@ namespace STW.Simple.Console.Workers
         {
             if (results is null) throw new ArgumentNullException(nameof(results));
 
-            _logger?.LogInformation($"\nRequest: {results?.ApiCall?.HttpStatusCode},Valid: {results.IsValid}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}, Elaspsed: {ConsoleTimer.DisplayElaspsedTime(ms)} Debug:\n{results?.DebugInformation}\n");
+            _logger?.LogInformation($"\nRequest: {results?.ApiCall?.HttpStatusCode},Valid: {results.IsValid}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}, Elaspsed: {ConsoleTimer.DisplayElaspsedTime(ms)} {(verbose ? "Debug:\n" + results?.DebugInformation : "")}\n");
 
             if (verbose)
             {
