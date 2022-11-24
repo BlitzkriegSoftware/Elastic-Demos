@@ -33,19 +33,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Faker.Data" Version="2.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<!-- Key Library for interacting w. Elastic Search -->
-		<PackageReference Include="NEST" Version="7.17.5" />
-	</ItemGroup>
-	
-	<ItemGroup>
+		<PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.0.1" />
+		<PackageReference Include="Faker.Data" Version="2.0.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 	</ItemGroup>
@@ -59,6 +52,7 @@
 	    <Pack>True</Pack>
 	    <PackagePath></PackagePath>
 	  </None>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
 	</ItemGroup>
 
 	<ItemGroup>

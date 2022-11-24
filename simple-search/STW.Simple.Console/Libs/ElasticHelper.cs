@@ -1,4 +1,5 @@
-﻿using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.IndexManagement;
 using System;
 
 namespace STW.Simple.Console.Libs
@@ -30,7 +31,7 @@ namespace STW.Simple.Console.Libs
         /// <param name="dropExisting">Delete and recreate index</param>
         /// <param name="response">CreateIndexResponse</param>
         /// <returns>True if created</returns>
-        public static bool IndexCreateIfMissing<T>(this ElasticClient client, ref string indexName, out CreateIndexResponse response, bool dropExisting = false) {
+        public static bool IndexCreateIfMissing<T>(this ElasticsearchClient client, ref string indexName, out CreateIndexResponse response, bool dropExisting = false) {
 
             bool created = false;
             response = null;
@@ -50,11 +51,8 @@ namespace STW.Simple.Console.Libs
 
             if (!exists)
             {
-                response = client.Indices.Create(indexName,
-                        index => index.Map<Models.Person>(
-                            x => x.AutoMap()
-                        ));
-
+                CreateIndexRequest cir = new(indexName);
+                response = client.Indices.Create(cir);
                 created = true;
             }
 

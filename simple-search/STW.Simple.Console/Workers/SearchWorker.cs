@@ -1,13 +1,16 @@
-﻿using Elasticsearch.Net;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-using Nest;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 
 using STW.Simple.Console.Libs;
 using STW.Simple.Console.Models;
 
 using System;
+using Elastic.Clients.Elasticsearch.IndexManagement;
+using Elastic.Clients.Elasticsearch.QueryDsl;
+using System.Collections.Generic;
 
 namespace STW.Simple.Console.Workers
 {
@@ -20,7 +23,11 @@ namespace STW.Simple.Console.Workers
 
         private readonly ILogger _logger;
         private readonly IConfigurationRoot _config;
-        private ElasticClient _client;
+        private ElasticsearchClient _client;
+
+#pragma warning disable IDE0052 // Future
+        private readonly float? boost = (float)1.0;
+#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// CTOR
@@ -68,28 +75,28 @@ namespace STW.Simple.Console.Workers
             // Make Client
             using (var t1 = new Libs.ConsoleTimer())
             {
-                var pool = new SingleNodeConnectionPool(new Uri(elasticConnectionString));
+                var elasticFingerPrint = "94:75:CE:4F:EB:05:32:83:40:B8:18:BB:79:01:7B:E0:F0:B6:C3:01:57:DB:4D:F5:D8:B8:A6:BA:BD:6D:C5:C4";
 
-                // See: https://www.elastic.co/guide/en/elasticsearch/client/net-api/7.17/connecting-to-elasticsearch-v8.html
-                var esettings = new ConnectionSettings(pool)
+                // See: https://www.elastic.co/guide/en/elasticsearch/client/net-api/8.0/connecting.html
+                var esettings = new ElasticsearchClientSettings(new Uri(elasticConnectionString))
                     // Only used for Demo in real apps, this is not desirable as streaming is more efficient
                     .DisableDirectStreaming()
                     .DefaultIndex(indexName)
-                    .CertificateFingerprint("94:75:CE:4F:EB:05:32:83:40:B8:18:BB:79:01:7B:E0:F0:B6:C3:01:57:DB:4D:F5:D8:B8:A6:BA:BD:6D:C5:C4")
-                    .BasicAuthentication("elastic", "password")
-                    .EnableApiVersioningHeader();
+                    .CertificateFingerprint(elasticFingerPrint)
+                    .Authentication(new BasicAuthentication("elastic", "password"))
+                    ;
 
-                _client = new ElasticClient(esettings);
+                _client = new ElasticsearchClient(esettings);
 
                 ms = t1.ElapsedMilliseconds;
 
                 // Verify the connection
                 var pingResults = _client.Ping();
-                _logger?.LogInformation($"Create Client, Is Valid: {pingResults.IsValid}, Error: {pingResults?.ServerError?.Status} , Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+                _logger?.LogInformation($"Create Client, Is Valid: {pingResults.IsValidResponse}, Error: {pingResults.ElasticsearchServerError}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
             
-                if(!pingResults.IsValid)
+                if(!pingResults.IsValidResponse)
                 {
-                    _logger?.LogError(pingResults.OriginalException.Message);
+                    _logger?.LogError(pingResults.ElasticsearchServerError.ToString());
                     return;
                 }
             }
@@ -109,7 +116,7 @@ namespace STW.Simple.Console.Workers
                 }
                 else
                 {
-                    _logger?.LogInformation($"{indexName}, Created: {indexResponse.IsValid}, Error: {indexResponse.ServerError}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+                    _logger?.LogInformation($"{indexName}, Acknowledged: {indexResponse.Acknowledged}, Error: {indexResponse.ElasticsearchServerError}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
                 }
             }
 
@@ -130,9 +137,9 @@ namespace STW.Simple.Console.Workers
 
             using (var t1 = new ConsoleTimer($"Count records"))
             {
-                var countResponse = _client.Count<Models.Person>();
+                CountResponse countResponse = _client.Count();
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nCount: {countResponse.Count}, IsValid: {countResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nCount: {countResponse.Count}, IsValid: {countResponse.IsValidResponse}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             #endregion
@@ -142,21 +149,9 @@ namespace STW.Simple.Console.Workers
             id = 1;
             using (var t1 = new ConsoleTimer($"Delete Record"))
             {
-                var deleteResponse = _client.Delete<Models.Person>(id);
+                _client.Delete<Models.Person>(id);
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nDelete: {id}, {deleteResponse.Result}, IsValid: {deleteResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
-            }
-
-            #endregion
-
-            #region "Delete by Query"
-
-            id = 5;
-            using (var t1 = new ConsoleTimer($"Delete Record"))
-            {
-                var qbqResult = _client.DeleteByQuery<Models.Person>(p => p.Index(indexName).Query(q => q.Term(m => m.Id, id)));
-                ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nDeleteByQuery: {qbqResult.Total}, IsValid: {qbqResult.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nDelete: {id}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             #endregion
@@ -166,9 +161,9 @@ namespace STW.Simple.Console.Workers
             id = 11;
             using (var t1 = new ConsoleTimer($"Exists Record"))
             {
-                var existsResponse = _client.DocumentExists<Models.Person>(id);
+                var existsResponse = _client.Exists<Models.Person>(id);
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nExists: {existsResponse.Exists}, IsValid: {existsResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nExists: {existsResponse}, IsValid: {existsResponse.IsValidResponse}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             #endregion
@@ -177,9 +172,9 @@ namespace STW.Simple.Console.Workers
 
             using (var t1 = new ConsoleTimer($"Get Record"))
             {
-                var getResponse = _client.Get<Models.Person>(id);
+                var model = _client.Get<Models.Person>(id);
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nGet: {getResponse.Source}, IsValid: {getResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nGet: {model}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             #endregion
@@ -188,37 +183,42 @@ namespace STW.Simple.Console.Workers
 
             using (var t1 = new ConsoleTimer($"Update Record"))
             {
-                var model = Models.Person.MakeRandom(id);
-                var updateResponse = _client.Update<Models.Person>(new DocumentPath<Models.Person>(model), u =>  u.Doc(model).Refresh(Elasticsearch.Net.Refresh.WaitFor));
+                var model = Person.MakeRandom(id);
+                _client.Delete<Models.Person>(id);
+                IndexResponse ir = _client.Index<Models.Person>(model);
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nUpdate: {updateResponse.Result}, IsValid: {updateResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nUpdate: {ir.Result}, IsValid: {ir.IsValidResponse}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             using (var t1 = new ConsoleTimer($"Get Record"))
             {
-                var getResponse = _client.Get<Models.Person>(id);
+                var model = _client.Get<Models.Person>(id);
                 ms = t1.ElapsedMilliseconds;
-                _logger?.LogInformation($"\nGet: {getResponse.Source}, IsValid: {getResponse.IsValid}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
+                _logger?.LogInformation($"\nGet: {model}, Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}");
             }
 
             #endregion
 
             #region "Wildcard Search"
 
-            ISearchResponse<Person> results;
+            SearchResponse<Person> results;
 
             searchTerm = "*" + o.SearchText + "*";
             using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
             {
                 var request = new SearchRequest<Models.Person>();
 
+
                 results = _client.Search<Models.Person>(s => s
                     .From(0)
                     .Size(size)
                     .Index(indexName)
-                    .Query(q => q.Wildcard(w => w.Boost(1.0).Field(f => f.FirstName).Value(searchTerm)) ||
-                                q.Wildcard(w => w.Boost(1.0).Field(f => f.LastName).Value(searchTerm))
-                    )
+                    //.Query(q => q.Wildcard(w => w.Boost(boost).Field(f => f.FirstName).Value(searchTerm)) ||
+                    //            q.Wildcard(w => w.Boost(boost).Field(f => f.LastName).Value(searchTerm))
+                    //)
+                    .Query(
+                            q => q.Wildcard(w=>w.Field(f=>f.FirstName).Value(searchTerm))
+                          )
                 );
                 ms = t1.ElapsedMilliseconds;
             }
@@ -234,13 +234,15 @@ namespace STW.Simple.Console.Workers
             searchTerm = "Id: 1 to 9";
             using (var t1 = new Libs.ConsoleTimer($"Search: {searchTerm}"))
             {
-
+                var idsQuery = new IdsQuery
+                {
+                    Values = new Ids(new List<string>() { "1", "2", "3", "4", "5", "6", "7", "8", "9" })
+                };
                 results = _client.Search<Models.Person>(s => s
                             .From(0)
                             .Size(size)
                             .Index(indexName)
-                            .Query(q => q.Range(r => r.Boost(1.0).Field(f => f.Id).GreaterThanOrEquals(1).LessThanOrEquals(9))
-                            )
+                            .Query(q => q.Ids(idsQuery: idsQuery))
                         );
                 ms = t1.ElapsedMilliseconds;
             }
@@ -277,7 +279,7 @@ namespace STW.Simple.Console.Workers
                         .From(0)
                         .Size(size)
                         .Index(indexName)
-                        .Query(q => q.MatchPhrase(p => p.Field(f => f.EMail).Boost(1.0).Query(searchTerm))
+                        .Query(q => q.MatchPhrase(p => p.Field(f => f.EMail).Boost((float)1.0).Query(searchTerm))
                         )
                     );
                 ms = t1.ElapsedMilliseconds;
@@ -298,11 +300,11 @@ namespace STW.Simple.Console.Workers
         /// <param name="searchTerm">Search Term</param>
         /// <param name="ms">Milliseconds</param>
         /// <param name="verbose">Show verbose output</param>
-        public void DumpRecords(ISearchResponse<Person> results, int size, string searchTerm, long ms = 0, bool verbose = false)
+        public void DumpRecords(SearchResponse<Person> results, int size, string searchTerm, long ms = 0, bool verbose = false)
         {
             if (results is null) throw new ArgumentNullException(nameof(results));
 
-            _logger?.LogInformation($"\nRequest: {results?.ApiCall?.HttpStatusCode},Valid: {results.IsValid}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}, Elaspsed: {ConsoleTimer.DisplayElaspsedTime(ms)} {(verbose ? "Debug:\n" + results?.DebugInformation : "")}\n");
+            _logger?.LogInformation($"\nRequest: {results.ApiCallDetails.HttpStatusCode},Valid: {results.IsValidResponse}, Hits: {results.Hits.Count}/{size}, Search: {searchTerm}, Elaspsed: {ConsoleTimer.DisplayElaspsedTime(ms)} {(verbose ? "Debug:\n" + results?.DebugInformation : "")}\n");
 
             if (verbose)
             {
@@ -324,7 +326,7 @@ namespace STW.Simple.Console.Workers
         /// <param name="count">How many to make</param>
         /// <param name="searchText">search text</param>
         /// <returns>True if likely</returns>
-        public bool CreateData(ElasticClient client, int count, string searchText)
+        public bool CreateData(ElasticsearchClient client, int count, string searchText)
         {
             bool isLikely = false;
             if (client is null) throw new ArgumentNullException(nameof(client));
@@ -335,7 +337,7 @@ namespace STW.Simple.Console.Workers
                 if (p.FirstName.Contains(searchText) || p.LastName.Contains(searchText)) isLikely = true;
                 _logger?.LogInformation($"\t{p}");
                 // This is what adds the record to the search index
-                client.IndexDocument<Models.Person>(p);
+                client.Index<Models.Person>(p);
             }
             return isLikely;
         }

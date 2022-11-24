@@ -137,7 +137,7 @@
             <param name="indexName">Index Name</param>
             <returns>Cleaned up index name</returns>
         </member>
-        <member name="M:STW.Simple.Console.Libs.ElasticHelper.IndexCreateIfMissing``1(Nest.ElasticClient,System.String@,Nest.CreateIndexResponse@,System.Boolean)">
+        <member name="M:STW.Simple.Console.Libs.ElasticHelper.IndexCreateIfMissing``1(Elastic.Clients.Elasticsearch.ElasticsearchClient,System.String@,Elastic.Clients.Elasticsearch.IndexManagement.CreateIndexResponse@,System.Boolean)">
             <summary>
             Create desired index if not there
             </summary>
@@ -388,7 +388,7 @@
             </summary>
             <param name="o">CommandOptions</param>
         </member>
-        <member name="M:STW.Simple.Console.Workers.SearchWorker.DumpRecords(Nest.ISearchResponse{STW.Simple.Console.Models.Person},System.Int32,System.String,System.Int64,System.Boolean)">
+        <member name="M:STW.Simple.Console.Workers.SearchWorker.DumpRecords(Elastic.Clients.Elasticsearch.SearchResponse{STW.Simple.Console.Models.Person},System.Int32,System.String,System.Int64,System.Boolean)">
             <summary>
             Dump Search Results
             </summary>
@@ -398,7 +398,7 @@
             <param name="ms">Milliseconds</param>
             <param name="verbose">Show verbose output</param>
         </member>
-        <member name="M:STW.Simple.Console.Workers.SearchWorker.CreateData(Nest.ElasticClient,System.Int32,System.String)">
+        <member name="M:STW.Simple.Console.Workers.SearchWorker.CreateData(Elastic.Clients.Elasticsearch.ElasticsearchClient,System.Int32,System.String)">
             <summary>
             Create Data
             </summary>
