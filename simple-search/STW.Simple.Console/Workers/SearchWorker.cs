@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Elasticsearch.Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Nest;
@@ -67,18 +68,30 @@ namespace STW.Simple.Console.Workers
             // Make Client
             using (var t1 = new Libs.ConsoleTimer())
             {
-                var settings = new ConnectionSettings(new Uri(elasticConnectionString)).DefaultIndex(indexName);
+                var pool = new SingleNodeConnectionPool(new Uri(elasticConnectionString));
 
-                // Only used for Demo in real apps, this is not desirable as streaming is more efficient
-                settings.DisableDirectStreaming();
+                // See: https://www.elastic.co/guide/en/elasticsearch/client/net-api/7.17/connecting-to-elasticsearch-v8.html
+                var esettings = new ConnectionSettings(pool)
+                    // Only used for Demo in real apps, this is not desirable as streaming is more efficient
+                    .DisableDirectStreaming()
+                    .DefaultIndex(indexName)
+                    .CertificateFingerprint("94:75:CE:4F:EB:05:32:83:40:B8:18:BB:79:01:7B:E0:F0:B6:C3:01:57:DB:4D:F5:D8:B8:A6:BA:BD:6D:C5:C4")
+                    .BasicAuthentication("elastic", "password")
+                    .EnableApiVersioningHeader();
 
-                _client = new ElasticClient(settings);
-                
+                _client = new ElasticClient(esettings);
+
                 ms = t1.ElapsedMilliseconds;
 
                 // Verify the connection
                 var pingResults = _client.Ping();
                 _logger?.LogInformation($"Create Client, Is Valid: {pingResults.IsValid}, Error: {pingResults?.ServerError?.Status} , Elasped: {ConsoleTimer.DisplayElaspsedTime(ms)}\n");
+            
+                if(!pingResults.IsValid)
+                {
+                    _logger?.LogError(pingResults.OriginalException.Message);
+                    return;
+                }
             }
 
             // Create Index

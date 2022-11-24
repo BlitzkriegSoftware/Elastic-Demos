@@ -1,6 +1,6 @@
 # Elastic Simple Search
 
-For Elastic version 7.x
+For Elastic version 8.x
 
 Using the [NEST library](https://www.nuget.org/packages/NEST)
 
