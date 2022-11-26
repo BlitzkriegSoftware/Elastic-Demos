@@ -2,7 +2,7 @@
 using Elastic.Clients.Elasticsearch.IndexManagement;
 using System;
 
-namespace Elastic_Simple_Search.test.Libs
+namespace Elastic_Simple_Search.Test.Libs
 {
     /// <summary>
     /// Elastic Helper
@@ -31,10 +31,9 @@ namespace Elastic_Simple_Search.test.Libs
         /// <param name="dropExisting">Delete and recreate index</param>
         /// <param name="response">CreateIndexResponse</param>
         /// <returns>True if created</returns>
-        public static bool IndexCreateIfMissing<T>(this ElasticsearchClient client, ref string indexName, out CreateIndexResponse response, bool dropExisting = false) {
+        public static bool IndexCreateIfMissing<T>(this ElasticsearchClient client, ref string indexName, ref CreateIndexResponse response, bool dropExisting = false) {
 
             bool created = false;
-            response = null;
 
             if (client is null) throw new ArgumentNullException(nameof(client));
             if (string.IsNullOrWhiteSpace(indexName)) throw new ArgumentNullException(nameof(indexName));
@@ -45,7 +44,7 @@ namespace Elastic_Simple_Search.test.Libs
 
             if (exists && dropExisting)
             {
-                client.Indices.Delete(indexName);
+                var dr = client.Indices.Delete(indexName);
                 exists = false;
             }
 
@@ -53,7 +52,7 @@ namespace Elastic_Simple_Search.test.Libs
             {
                 CreateIndexRequest cir = new(indexName);
                 response = client.Indices.Create(cir);
-                created = true;
+                created = response.Acknowledged;
             }
 
             return created;

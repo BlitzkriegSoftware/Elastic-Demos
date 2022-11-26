@@ -1,4 +1,4 @@
-﻿namespace Elastic_Simple_Search.test.Libs
+﻿namespace Elastic_Simple_Search.Test.Libs
 {
     /// <summary>
     /// Encoding Helper

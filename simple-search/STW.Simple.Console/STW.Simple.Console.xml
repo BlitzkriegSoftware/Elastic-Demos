@@ -125,48 +125,6 @@
             </summary>
             <param name="disposing">True if so</param>
         </member>
-        <member name="T:STW.Simple.Console.Libs.ElasticHelper">
-            <summary>
-            Elastic Helper
-            </summary>
-        </member>
-        <member name="M:STW.Simple.Console.Libs.ElasticHelper.IndexNameFix(System.String)">
-            <summary>
-            Fix Index Name
-            </summary>
-            <param name="indexName">Index Name</param>
-            <returns>Cleaned up index name</returns>
-        </member>
-        <member name="M:STW.Simple.Console.Libs.ElasticHelper.IndexCreateIfMissing``1(Elastic.Clients.Elasticsearch.ElasticsearchClient,System.String@,Elastic.Clients.Elasticsearch.IndexManagement.CreateIndexResponse@,System.Boolean)">
-            <summary>
-            Create desired index if not there
-            </summary>
-            <typeparam name="T">T</typeparam>
-            <param name="client">(required) ElasticClient</param>
-            <param name="indexName">(required) index name</param>
-            <param name="dropExisting">Delete and recreate index</param>
-            <param name="response">CreateIndexResponse</param>
-            <returns>True if created</returns>
-        </member>
-        <member name="T:STW.Simple.Console.Libs.EncodingHelper">
-            <summary>
-            Encoding Helper
-            </summary>
-        </member>
-        <member name="M:STW.Simple.Console.Libs.EncodingHelper.EncodeToBytes(System.String)">
-            <summary>
-            Convert string to byte array
-            </summary>
-            <param name="text">string</param>
-            <returns>byte array</returns>
-        </member>
-        <member name="M:STW.Simple.Console.Libs.EncodingHelper.DecodeFromBytes(System.Byte[])">
-            <summary>
-            Convert byte array to string
-            </summary>
-            <param name="content">byte array</param>
-            <returns>string</returns>
-        </member>
         <member name="T:STW.Simple.Console.Libs.MissingConfigurationException">
             <summary>
             Missing Configuration Exception
@@ -406,6 +364,48 @@
             <param name="count">How many to make</param>
             <param name="searchText">search text</param>
             <returns>True if likely</returns>
+        </member>
+        <member name="T:Elastic_Simple_Search.test.Libs.ElasticHelper">
+            <summary>
+            Elastic Helper
+            </summary>
+        </member>
+        <member name="M:Elastic_Simple_Search.test.Libs.ElasticHelper.IndexNameFix(System.String)">
+            <summary>
+            Fix Index Name
+            </summary>
+            <param name="indexName">Index Name</param>
+            <returns>Cleaned up index name</returns>
+        </member>
+        <member name="M:Elastic_Simple_Search.test.Libs.ElasticHelper.IndexCreateIfMissing``1(Elastic.Clients.Elasticsearch.ElasticsearchClient,System.String@,Elastic.Clients.Elasticsearch.IndexManagement.CreateIndexResponse@,System.Boolean)">
+            <summary>
+            Create desired index if not there
+            </summary>
+            <typeparam name="T">T</typeparam>
+            <param name="client">(required) ElasticClient</param>
+            <param name="indexName">(required) index name</param>
+            <param name="dropExisting">Delete and recreate index</param>
+            <param name="response">CreateIndexResponse</param>
+            <returns>True if created</returns>
+        </member>
+        <member name="T:Elastic_Simple_Search.test.Libs.EncodingHelper">
+            <summary>
+            Encoding Helper
+            </summary>
+        </member>
+        <member name="M:Elastic_Simple_Search.test.Libs.EncodingHelper.EncodeToBytes(System.String)">
+            <summary>
+            Convert string to byte array
+            </summary>
+            <param name="text">string</param>
+            <returns>byte array</returns>
+        </member>
+        <member name="M:Elastic_Simple_Search.test.Libs.EncodingHelper.DecodeFromBytes(System.Byte[])">
+            <summary>
+            Convert byte array to string
+            </summary>
+            <param name="content">byte array</param>
+            <returns>string</returns>
         </member>
     </members>
 </doc>

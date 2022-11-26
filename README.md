@@ -10,5 +10,5 @@ Demos of using Elastic Search for various architectural problems
 
 2. In the `scripts/` folder there are two scripts, one to start Elastic (single instance), and one to stop and remove it
 
-# Demos
+# See Unit Tests
 
