@@ -20,6 +20,9 @@ using Elastic_Simple_Search.Test.Models;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Drawing;
+using System.Text;
+using System.Collections;
+using Elastic.Transport.Extensions;
 
 namespace Elastic_Simple_Search.Test
 {
@@ -101,10 +104,12 @@ namespace Elastic_Simple_Search.Test
         /// <param name="size">Max requested</param>
         /// <param name="searchTerm">Search Term</param>
         /// <param name="verbose">Show verbose output</param>
-        public static void DumpRecords(IEnumerable<Person> results)
+        public static void DumpRecords(SearchResponse<Person> results)
         {
             if (results is null) throw new ArgumentNullException(nameof(results));
-            foreach (var p in results)
+
+            _logger.LogInformation($"Ok: {results.IsValidResponse}, Hits: {results.Hits.Count}, Fields: {results.Fields?.ToFieldList()}");
+            foreach (var p in results.Documents)
             {
                 _logger?.LogInformation($"\t{p}");
             }
@@ -282,20 +287,67 @@ namespace Elastic_Simple_Search.Test
 
             string searchTerm = "*t*";
 
-            var searchResponse = _client.Search<Person>(s => s
-                .Query (q => q
-                    .MultiMatch (m => m
-                        .Fields(new [] {"FirstName", "LastName"})
-                        .Operator(Operator.Or)
-                        .Query(searchTerm)
-                    )
-                )
-            );
+            SearchRequest<Person> searchRequest = new(ElasticDefaultIndex)
+            {
+                Query = new MultiMatchQuery()
+                {
+                    Fields = new Field[] { 
+                        new Field("LastName"),
+                        new Field("FirstName")
+                    },
+                    Query = searchTerm,
+                    Operator = Operator.Or,
+                    Boost = 1.0f,
+                    Lenient = true,
+                    MaxExpansions = 2,
+                    QueryName = "last_first_search"
+                },
+                 SearchType = SearchType.QueryThenFetch
+            };
+
+            var json = _client.RequestResponseSerializer.SerializeToString(searchRequest, SerializationFormatting.Indented);
+            _logger.LogDebug(json);
+
+            var searchResponse = _client.Search<Person>(searchRequest);
 
             if (searchResponse.IsValidResponse)
             {
-                DumpRecords(searchResponse.Documents);
+                DumpRecords(searchResponse);
             } else
+            {
+                Assert.Fail(searchResponse.DebugInformation);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestType", "IntegrationTest")]
+        public void Test_0120_Search()
+        {
+            if (!_dataInit) Test_0020_Create_Data();
+
+            using var tx = new TxTimer(_testContext);
+
+            string searchTerm = ".org";
+
+            SearchRequest<Person> searchRequest = new(ElasticDefaultIndex)
+            {
+                Query = new MatchPhraseQuery(new Field("EMail"))
+                {
+                     Query= searchTerm,
+                     Boost= 2.0f
+                }
+            };
+
+            var json = _client.RequestResponseSerializer.SerializeToString(searchRequest, SerializationFormatting.Indented);
+            _logger.LogDebug(json);
+
+            var searchResponse = _client.Search<Person>(searchRequest);
+
+            if (searchResponse.IsValidResponse)
+            {
+                DumpRecords(searchResponse);
+            }
+            else
             {
                 Assert.Fail(searchResponse.DebugInformation);
             }

@@ -19,4 +19,6 @@ docker run -d \
 	-e "xpack.security.enabled=false" \
 	$IMAGE
 
-	curl http://localhost:9200
+sleep 30s
+
+curl http://localhost:9200

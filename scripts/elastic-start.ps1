@@ -23,4 +23,6 @@ docker run -d `
 	-e "xpack.security.enabled=false" `
 	$IMAGE
 
-curl http://localhost:9200
+Start-Sleep -Seconds 30
+
+Invoke-WebRequest http://localhost:9200
